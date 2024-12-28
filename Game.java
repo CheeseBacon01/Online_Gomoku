@@ -2,7 +2,7 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
-class Game extends JFrame implements ActionListener, MouseListener {
+class Game extends JFrame implements ActionListener,MouseListener{
 	@Override
 	public void actionPerformed(ActionEvent e){
 		
@@ -96,6 +96,7 @@ class Game extends JFrame implements ActionListener, MouseListener {
 			}
 		}
 	}
+	
 	class Gomoku{
 		char[][] board;
 		Gomoku(){
@@ -131,7 +132,6 @@ class Game extends JFrame implements ActionListener, MouseListener {
 					count=0;
 				}
 			}
-
 			for(int i=-4;i<=4;i++){  //Diagonal
 				if(y+i>=1&&y+i<=15&&x+i>=1&&x+i<=15&&board[x+i][y+i]==current){
 					count++;
@@ -143,7 +143,6 @@ class Game extends JFrame implements ActionListener, MouseListener {
 					count=0;
 				}
 			}
-
 			for(int i=-4;i<=4;i++){  //Diagonal
 				if(y-i>=1&&y-i<=15&&x+i>=1&&x+i<=15&&board[x+i][y-i]==current){
 					count++;
@@ -158,13 +157,6 @@ class Game extends JFrame implements ActionListener, MouseListener {
 			return 0;
 		}
 		
-	}
-
-
-	class MyActionListener implements ActionListener {
-		public void actionPerformed(ActionEvent event) {
-			
-		}
 	}
 
 	public void resetgame(){
