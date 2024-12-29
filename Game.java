@@ -1,5 +1,7 @@
+import java.net.Socket;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.*;
 import javax.swing.*;
 
 class Game extends JFrame implements ActionListener,MouseListener{
@@ -8,21 +10,28 @@ class Game extends JFrame implements ActionListener,MouseListener{
 		
 	}
 	JButton[] buttons;
+    private static final String ADDRESS="127.0.0.1";
+    private static final int PORT=5555;
 	private Gomoku game;
 	private JTextField inputLine;
 	private JTextArea  textArea;
 	private char user1='B';
 	private char user2='W';
 	private char current=user1;
-	
+    private InputStream in;
+    private OutputStream out;
+    private BufferedReader reader;
+    private PrintWriter writer;
+
 	@Override
 	public void mouseClicked(MouseEvent e){
 		int x=(e.getX()-50+25)/50+1;
 		int y=(e.getY()-50+25)/50+1;
 		if(x>=1&&x<=15&&y>=1&&y<=15&&game.board[x][y]==' '){
-			game.board[x][y]=current;
-			repaint();
-			if(game.evaluate(x,y,current)==1){
+            game.board[x][y]=current;
+            writer.println(x+","+y);
+            repaint();
+            if(game.evaluate(x,y,current)==1){
 				JOptionPane.showMessageDialog(this,"Player "+current+" wins!");
 				resetgame();
 				return;
@@ -43,15 +52,14 @@ class Game extends JFrame implements ActionListener,MouseListener{
 		}
 	}
 
-	public Game(String title){
-		super(title);
+    public Game(String title) {
+        super(title);
 		game=new Gomoku();
         buttons=new JButton[10];
         this.setLocation(150,250);
         this.setSize(1000, 850);
         this.setBackground(Color.WHITE);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        //MyActionListener actionListener=new MyActionListener();
         textArea=new JTextArea();
         textArea.setBounds(750,70,200,500); 
         Container contentPane=getContentPane();
@@ -66,9 +74,21 @@ class Game extends JFrame implements ActionListener,MouseListener{
 		setDefaultCloseOperation( EXIT_ON_CLOSE );
 		addMouseListener(this);
 		this.setVisible(true);
-	}
+        Socket client = null;
 
-	public void paint(Graphics _g){
+        try{
+            client=new Socket(ADDRESS,PORT);
+            out=client.getOutputStream();
+            in=client.getInputStream();
+            reader=new BufferedReader(new InputStreamReader(in));
+            writer=new PrintWriter(out,true);
+            new IncomingReader().start();
+        }catch(IOException e){
+            System.out.println("ERROR");
+        }
+    }
+
+    public void paint(Graphics _g){
 		super.paint(_g);
 		Graphics2D g=(Graphics2D)_g;
 		g.setStroke(new BasicStroke(2));
@@ -96,8 +116,8 @@ class Game extends JFrame implements ActionListener,MouseListener{
 			}
 		}
 	}
-	
-	class Gomoku{
+
+    class Gomoku{
 		char[][] board;
 		Gomoku(){
 			board=new char[16][16];
@@ -156,10 +176,9 @@ class Game extends JFrame implements ActionListener,MouseListener{
 			}
 			return 0;
 		}
-		
 	}
 
-	public void resetgame(){
+    public void resetgame(){
 		game=new Gomoku();
 		current=user1;
 		repaint();
@@ -176,12 +195,29 @@ class Game extends JFrame implements ActionListener,MouseListener{
 		return true;
 	}
 
+    class IncomingReader extends Thread {
+        public void run(){
+            try{
+                String message;
+                while((message=reader.readLine())!=null){
+                    String[] parts=message.split(",");
+                    int x=Integer.parseInt(parts[0]);
+                    int y=Integer.parseInt(parts[1]);
+                    char player=parts[2].charAt(0);
+                    game.board[x][y]=player;
+                    repaint();
+                }
+            }catch(IOException e){
+                e.printStackTrace();
+            }
+        }
+    }
 
-	public static void main(String[] args) {
-        Game frame1 = new Game("Gomoku");
+    public static void main(String[] args){
+        Game frame1=new Game("Gomoku");
 	}
-	
-	@Override
+
+    @Override
     public void mousePressed(MouseEvent e){}
 
     @Override
