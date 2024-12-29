@@ -35,8 +35,9 @@ public class Server{
             PrintWriter writer2=new PrintWriter(output2,true);
             out1=writer1;
             out2=writer2;
-            new MyThread(reader1,writer1,writer2).start();
-            new MyThread(reader2,writer2,writer1).start();
+            writer1.println("YOUR_TURN");
+            new MyThread(reader1,writer1,writer2,'B').start();
+            new MyThread(reader2,writer2,writer1,'W').start();
         }catch(IOException e){
             System.out.println(e);
         }
@@ -45,11 +46,13 @@ public class Server{
     class MyThread extends Thread{
         private BufferedReader in;
         private PrintWriter out,out2;
+        private char player;
 
-        public MyThread(BufferedReader in,PrintWriter out1,PrintWriter out2){
+        public MyThread(BufferedReader in,PrintWriter out1,PrintWriter out2,char player){
             this.out=out1;
             this.in=in;
             this.out2=out2;
+            this.player=player;
         }
 
         public void run(){
@@ -60,18 +63,29 @@ public class Server{
                         String[] buffer=str.split(",");
                         int x=Integer.parseInt(buffer[0]);
                         int y=Integer.parseInt(buffer[1]);
-                        if(game.board[x][y]==' '){
+                        if(game.board[x][y]==' '&&current==player){
                             game.board[x][y]=current;
                             out.println(x+","+y+","+current);
                             out2.println(x+","+y+","+current);
+
                             if(game.evaluate(x,y,current)==1){
                                 out.println("WIN "+current);
                                 out2.println("WIN "+current);
                                 game.reset();
                                 current='B';
-                                break;
-                            } else {
-                                current=(current=='B')?'W':'B';
+                                out.println("RESET");
+                                out2.println("RESET");
+                                out2.println("YOUR_TURN");
+                                out.println("YOUR_TURN");
+                            }
+                            else {
+                                if(current=='B'){
+                                    current='W';
+                                }
+                                else {
+                                    current='B';
+                                }
+                                out2.println("YOUR_TURN");
                             }
                         }
                     }
@@ -83,68 +97,68 @@ public class Server{
     }
     
     class Gomoku{
-		char[][] board;
+        char[][] board;
 
-		Gomoku(){
-			board=new char[16][16];
+        Gomoku(){
+            board=new char[16][16];
             reset();
-		}
+        }
 
         void reset(){
             for(int i=1;i<=15;i++){
-				for(int j=1;j<=15;j++){
-					board[i][j]=' ';
-				}
-			}
+                for(int j=1;j<=15;j++){
+                    board[i][j]=' ';
+                }
+            }
         }
-		public int evaluate(int x,int y,char current){
-			int count=0;
-			for(int i=-4;i<=4;i++){  //Horizon
-				if(x+i>=1&&x+i<=15&&board[x+i][y]==current){
-					count++;
-					if(count>=5){
-						return 1;
-					}
-				}
-				else{
-					count=0;
-				}
-			}
-			count=0;
-			for(int i=-4;i<=4;i++){  //Vertical
-				if(y+i>=1&&y+i<=15&&board[x][y+i]==current){
-					count++;
-					if(count>=5){
-						return 1;
-					}
-				}
-				else{
-					count=0;
-				}
-			}
-			for(int i=-4;i<=4;i++){  //Diagonal
-				if(y+i>=1&&y+i<=15&&x+i>=1&&x+i<=15&&board[x+i][y+i]==current){
-					count++;
-					if(count>=5){
-						return 1;
-					}
-				}
-				else{
-					count=0;
-				}
-			}
-			for(int i=-4;i<=4;i++){  //Diagonal
-				if(y-i>=1&&y-i<=15&&x+i>=1&&x+i<=15&&board[x+i][y-i]==current){
-					count++;
-					if(count>=5){
-						return 1;
-					}
-				}
-				else{
-					count=0;
-				}
-			}
-			return 0;
-		}
-	}
+        public int evaluate(int x,int y,char current){
+            int count=0;
+            for(int i=-4;i<=4;i++){  //Horizon
+                if(x+i>=1&&x+i<=15&&board[x+i][y]==current){
+                    count++;
+                    if(count>=5){
+                        return 1;
+                    }
+                }
+                else{
+                    count=0;
+                }
+            }
+            count=0;
+            for(int i=-4;i<=4;i++){  //Vertical
+                if(y+i>=1&&y<=15&&board[x][y+i]==current){
+                    count++;
+                    if(count>=5){
+                        return 1;
+                    }
+                }
+                else{
+                    count=0;
+                }
+            }
+            for(int i=-4;i<=4;i++){  //Diagonal
+                if(y+i>=1&&y<=15&&x+i>=1&&x+i<=15&&board[x+i][y+i]==current){
+                    count++;
+                    if(count>=5){
+                        return 1;
+                    }
+                }
+                else{
+                    count=0;
+                }
+            }
+            for(int i=-4;i<=4;i++){  //Diagonal
+                if(y-i>=1&&y-i<=15&&x+i>=1&&x+i<=15&&board[x+i][y-i]==current){
+                    count++;
+                    if(count>=5){
+                        return 1;
+                    }
+                }
+                else{
+                    count=0;
+                }
+            }
+            return 0;
+        }
+    }
 }
