@@ -33,9 +33,9 @@ public class Server{
             OutputStream output2=socket2.getOutputStream();
             BufferedReader reader2=new BufferedReader(new InputStreamReader(input2));
             PrintWriter writer2=new PrintWriter(output2,true);
-            out1=writer1;
-            out2=writer2;
+            
             writer1.println("YOUR_TURN");
+            writer1.flush();
             new MyThread(reader1,writer1,writer2,'B').start();
             new MyThread(reader2,writer2,writer1,'W').start();
         }catch(IOException e){
@@ -63,26 +63,49 @@ public class Server{
                         String[] buffer=str.split(",");
                         int x=Integer.parseInt(buffer[0]);
                         int y=Integer.parseInt(buffer[1]);
+
                         if(game.board[x][y]==' '&&current==player){
                             game.board[x][y]=current;
                             out.println(x+","+y+","+current);
+                            out.flush();
                             out2.println(x+","+y+","+current);
+                            out2.flush();
 
                             if(game.evaluate(x,y,current)==1){
                                 out.println("WIN "+current);
                                 out2.println("WIN "+current);
                                 game.reset();
                                 current='B';
-                                out.println("RESET");
-                                out2.println("RESET");
-                                out2.println("YOUR_TURN");
-                                out.println("YOUR_TURN");
+                                out.println("RESET B");
+                                out2.println("RESET W");
+                                if(player=='B'){
+                                    out.println("YOUR_TURN");
+                                }
+                                else{
+                                    out2.println("YOUR_TURN");
+                                    out.println("NOT_YOUR_TURN");
+                                }
                             }
-                            else {
+                            else if (game.Tie()){
+                                out.println("TIE");
+                                out2.println("TIE");
+                                game.reset();
+                                current='B';
+                                out.println("RESET B");
+                                out2.println("RESET W");
+                                if(player=='B'){
+                                    out.println("YOUR_TURN");
+                                }
+                                else{
+                                    out2.println("YOUR_TURN");
+                                    out.println("NOT_YOUR_TURN");
+                                }
+                            }
+                            else{
                                 if(current=='B'){
                                     current='W';
                                 }
-                                else {
+                                else{
                                     current='B';
                                 }
                                 out2.println("YOUR_TURN");
@@ -111,6 +134,18 @@ public class Server{
                 }
             }
         }
+
+        public boolean Tie(){
+            for(int i=1;i<=15;i++){
+                for(int j=1;j<=15;j++){
+                    if(board[i][j]==' '){
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
         public int evaluate(int x,int y,char current){
             int count=0;
             for(int i=-4;i<=4;i++){  //Horizon
@@ -126,7 +161,7 @@ public class Server{
             }
             count=0;
             for(int i=-4;i<=4;i++){  //Vertical
-                if(y+i>=1&&y<=15&&board[x][y+i]==current){
+                if(y+i>=1&&y+i<=15&&board[x][y+i]==current){
                     count++;
                     if(count>=5){
                         return 1;
@@ -137,7 +172,7 @@ public class Server{
                 }
             }
             for(int i=-4;i<=4;i++){  //Diagonal
-                if(y+i>=1&&y<=15&&x+i>=1&&x+i<=15&&board[x+i][y+i]==current){
+                if(y+i>=1&&y+i<=15&&x+i>=1&&x+i<=15&&board[x+i][y+i]==current){
                     count++;
                     if(count>=5){
                         return 1;

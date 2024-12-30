@@ -34,24 +34,6 @@ class Game extends JFrame implements ActionListener,MouseListener{
             writer.println(x+","+y);
             repaint();
             myTurn=false;
-            if(game.evaluate(x,y,current)==1){
-                JOptionPane.showMessageDialog(this,"Player "+current+" wins!");
-                resetgame();
-                return;
-            }
-            else{
-                if(current==user1){
-                    current=user2;
-                }
-                else{
-                    current=user1;
-                }
-            }
-            if(tie()){
-                JOptionPane.showMessageDialog(this,"TIE");
-                resetgame();
-                return;
-            }
         }
     }
 
@@ -145,7 +127,7 @@ class Game extends JFrame implements ActionListener,MouseListener{
             }
             count=0;
             for(int i=-4;i<=4;i++){  //Vertical
-                if(y+i>=1&&y<=15&&board[x][y+i]==current){
+                if(y+i>=1&&y+i<=15&&board[x][y+i]==current){
                     count++;
                     if(count>=5){
                         return 1;
@@ -156,7 +138,7 @@ class Game extends JFrame implements ActionListener,MouseListener{
                 }
             }
             for(int i=-4;i<=4;i++){  //Diagonal
-                if(y+i>=1&&y<=15&&x+i>=1&&x+i<=15&&board[x+i][y+i]==current){
+                if(y+i>=1&&y+i<=15&&x+i>=1&&x+i<=15&&board[x+i][y+i]==current){
                     count++;
                     if(count>=5){
                         return 1;
@@ -181,10 +163,10 @@ class Game extends JFrame implements ActionListener,MouseListener{
         }
     }
 
-    public void resetgame(){
+    public void resetgame(Character player){
         game=new Gomoku();
         current=user1;
-        myTurn = (current == user1);
+        myTurn=(player==current);
         repaint();
     }
 
@@ -208,14 +190,24 @@ class Game extends JFrame implements ActionListener,MouseListener{
                         myTurn=true;
                         continue;
                     }
-                    if(message.equals("RESET")){
-                        resetgame();
+					if(message.equals("NOT_YOUR_TURN")){
+                        myTurn=false;
+                        continue;
+                    }
+                    if(message.startsWith("RESET")){
+                        char player=message.charAt(6);
+                        resetgame(player);
                         continue;
                     }
                     if(message.startsWith("WIN")){
                         char winner=message.charAt(4);
                         JOptionPane.showMessageDialog(Game.this,"Player "+winner+" wins!");
-                        resetgame();
+                        resetgame('B');
+                        continue;
+                    }
+                    if(message.equals("TIE")){
+                        JOptionPane.showMessageDialog(Game.this,"TIE");
+                        resetgame('B');
                         continue;
                     }
                     String[] parts=message.split(",");
