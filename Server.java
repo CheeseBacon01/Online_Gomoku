@@ -6,7 +6,6 @@ public class Server{
     private static int portNumber=5555;
     private Gomoku game;
     private char current;
-    private PrintWriter out1,out2;
 
     public static void main(String[] args){
         new Server().Connect();
@@ -60,6 +59,10 @@ public class Server{
                 while(true){
                     String str=in.readLine();
                     if(str!=null){
+                        if(str.startsWith("CHAT")){
+                            out2.println(str);
+                            continue;
+                        }
                         String[] buffer=str.split(",");
                         int x=Integer.parseInt(buffer[0]);
                         int y=Integer.parseInt(buffer[1]);
@@ -70,7 +73,7 @@ public class Server{
                             out.flush();
                             out2.println(x+","+y+","+current);
                             out2.flush();
-
+                            
                             if(game.evaluate(x,y,current)==1){
                                 out.println("WIN "+current);
                                 out2.println("WIN "+current);
@@ -123,21 +126,21 @@ public class Server{
         char[][] board;
 
         Gomoku(){
-            board=new char[16][16];
+            board=new char[10][10];
             reset();
         }
 
         void reset(){
-            for(int i=1;i<=15;i++){
-                for(int j=1;j<=15;j++){
+            for(int i=1;i<=9;i++){
+                for(int j=1;j<=9;j++){
                     board[i][j]=' ';
                 }
             }
         }
 
         public boolean Tie(){
-            for(int i=1;i<=15;i++){
-                for(int j=1;j<=15;j++){
+            for(int i=1;i<=9;i++){
+                for(int j=1;j<=9;j++){
                     if(board[i][j]==' '){
                         return false;
                     }
@@ -149,7 +152,7 @@ public class Server{
         public int evaluate(int x,int y,char current){
             int count=0;
             for(int i=-4;i<=4;i++){  //Horizon
-                if(x+i>=1&&x+i<=15&&board[x+i][y]==current){
+                if(x+i>=1&&x+i<=9&&board[x+i][y]==current){
                     count++;
                     if(count>=5){
                         return 1;
@@ -161,7 +164,7 @@ public class Server{
             }
             count=0;
             for(int i=-4;i<=4;i++){  //Vertical
-                if(y+i>=1&&y+i<=15&&board[x][y+i]==current){
+                if(y+i>=1&&y+i<=9&&board[x][y+i]==current){
                     count++;
                     if(count>=5){
                         return 1;
@@ -172,7 +175,7 @@ public class Server{
                 }
             }
             for(int i=-4;i<=4;i++){  //Diagonal
-                if(y+i>=1&&y+i<=15&&x+i>=1&&x+i<=15&&board[x+i][y+i]==current){
+                if(y+i>=1&&y+i<=9&&x+i>=1&&x+i<=9&&board[x+i][y+i]==current){
                     count++;
                     if(count>=5){
                         return 1;
@@ -183,7 +186,7 @@ public class Server{
                 }
             }
             for(int i=-4;i<=4;i++){  //Diagonal
-                if(y-i>=1&&y-i<=15&&x+i>=1&&x+i<=15&&board[x+i][y-i]==current){
+                if(y-i>=1&&y-i<=9&&x+i>=1&&x+i<=9&&board[x+i][y-i]==current){
                     count++;
                     if(count>=5){
                         return 1;

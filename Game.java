@@ -6,8 +6,15 @@ import javax.swing.*;
 
 class Game extends JFrame implements ActionListener,MouseListener{
     @Override
-    public void actionPerformed(ActionEvent e){
-        
+    public void actionPerformed(ActionEvent event){
+        if(event.getSource()==inputLine){
+			String input=inputLine.getText();
+			if(!input.isEmpty()){
+				textArea.append("Self: "+input+"\n");
+				writer.println("CHAT"+input);
+				inputLine.setText("");
+			}
+		}
     }
     JButton[] buttons;
     private static final String ADDRESS="127.0.0.1";
@@ -16,7 +23,6 @@ class Game extends JFrame implements ActionListener,MouseListener{
     private JTextField inputLine;
     private JTextArea  textArea;
     private char user1='B';
-    private char user2='W';
     private char current=user1;
     private InputStream in;
     private OutputStream out;
@@ -27,9 +33,9 @@ class Game extends JFrame implements ActionListener,MouseListener{
     @Override
     public void mouseClicked(MouseEvent e){
         if(!myTurn) return;
-        int x=(e.getX()-50+25)/50+1;
-        int y=(e.getY()-50+25)/50+1;
-        if(x>=1&&x<=15&&y>=1&&y<=15&&game.board[x][y]==' '){
+        int x=(e.getX()-25)/50+1;
+        int y=(e.getY()-25)/50+1;
+        if(x>=1&&x<=9&&y>=1&&y<=9&&game.board[x][y]==' '){
             game.board[x][y]=current;
             writer.println(x+","+y);
             repaint();
@@ -40,26 +46,27 @@ class Game extends JFrame implements ActionListener,MouseListener{
     public Game(String title) {
         super(title);
         game=new Gomoku();
-        buttons=new JButton[10];
-        this.setLocation(150,250);
-        this.setSize(1000, 850);
+        this.setLocation(300,250);
+        this.setSize(800, 500);
         this.setBackground(Color.WHITE);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         textArea=new JTextArea();
-        textArea.setBounds(750,70,200,500); 
+        textArea.setBounds(500,20,200,300);
+		JScrollPane scrollText=new JScrollPane(textArea);
+		scrollText.setBounds(500,20,200,300);
         Container contentPane=getContentPane();
         contentPane.setLayout(null);
-        contentPane.add(textArea);
-        
+        contentPane.add(scrollText);
+
         inputLine = new JTextField();
         inputLine.setPreferredSize(new Dimension(200,30));
-        inputLine.setBounds(750, 600, 200, 30); 
+        inputLine.setBounds(500,350,200,30); 
         contentPane.add(inputLine);
         inputLine.addActionListener(this);
-        setDefaultCloseOperation( EXIT_ON_CLOSE );
+
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
         addMouseListener(this);
         this.setVisible(true);
-        Socket client = null;
+        Socket client=null;
 
         try{
             client=new Socket(ADDRESS,PORT);
@@ -78,16 +85,16 @@ class Game extends JFrame implements ActionListener,MouseListener{
         Graphics2D g=(Graphics2D)_g;
         g.setStroke(new BasicStroke(2));
         g.setColor(Color.BLACK);
-        for(int i=50;i<=750;i+=50){ 
-            g.drawLine(i,50,i,750);
-            g.drawLine(50,i,750,i);
+        for(int i=50;i<=450;i+=50){ 
+            g.drawLine(i,50,i,450);
+            g.drawLine(50,i,450,i);
         }
         draw(g);
     }
 
     public void draw(Graphics2D g){
-        for(int i=1;i<=15;i++){
-            for(int j=1;j<=15;j++){
+        for(int i=1;i<=9;i++){
+            for(int j=1;j<=9;j++){
                 if(game.board[i][j]!=' '){
                     if(game.board[i][j]==user1){
                         g.setColor(Color.BLACK);
@@ -105,9 +112,9 @@ class Game extends JFrame implements ActionListener,MouseListener{
     class Gomoku{
         char[][] board;
         Gomoku(){
-            board=new char[16][16];
-            for(int i=1;i<=15;i++){
-                for(int j=1;j<=15;j++){
+            board=new char[10][10];
+            for(int i=1;i<=9;i++){
+                for(int j=1;j<=9;j++){
                     board[i][j]=' ';
                 }
             }
@@ -115,7 +122,7 @@ class Game extends JFrame implements ActionListener,MouseListener{
         public int evaluate(int x,int y,char current){
             int count=0;
             for(int i=-4;i<=4;i++){  //Horizon
-                if(x+i>=1&&x+i<=15&&board[x+i][y]==current){
+                if(x+i>=1&&x+i<=9&&board[x+i][y]==current){
                     count++;
                     if(count>=5){
                         return 1;
@@ -127,7 +134,7 @@ class Game extends JFrame implements ActionListener,MouseListener{
             }
             count=0;
             for(int i=-4;i<=4;i++){  //Vertical
-                if(y+i>=1&&y+i<=15&&board[x][y+i]==current){
+                if(y+i>=1&&y+i<=9&&board[x][y+i]==current){
                     count++;
                     if(count>=5){
                         return 1;
@@ -138,7 +145,7 @@ class Game extends JFrame implements ActionListener,MouseListener{
                 }
             }
             for(int i=-4;i<=4;i++){  //Diagonal
-                if(y+i>=1&&y+i<=15&&x+i>=1&&x+i<=15&&board[x+i][y+i]==current){
+                if(y+i>=1&&y+i<=9&&x+i>=1&&x+i<=9&&board[x+i][y+i]==current){
                     count++;
                     if(count>=5){
                         return 1;
@@ -149,7 +156,7 @@ class Game extends JFrame implements ActionListener,MouseListener{
                 }
             }
             for(int i=-4;i<=4;i++){  //Diagonal
-                if(y-i>=1&&y-i<=15&&x+i>=1&&x+i<=15&&board[x+i][y-i]==current){
+                if(y-i>=1&&y-i<=9&&x+i>=1&&x+i<=9&&board[x+i][y-i]==current){
                     count++;
                     if(count>=5){
                         return 1;
@@ -171,8 +178,8 @@ class Game extends JFrame implements ActionListener,MouseListener{
     }
 
     public boolean tie(){
-        for(int i=1;i<=15;i++){
-            for(int j=1;j<=15;j++){
+        for(int i=1;i<=9;i++){
+            for(int j=1;j<=9;j++){
                 if(game.board[i][j]==' '){
                     return false;
                 }
@@ -199,6 +206,11 @@ class Game extends JFrame implements ActionListener,MouseListener{
                         resetgame(player);
                         continue;
                     }
+					if(message.startsWith("CHAT")){
+						String msg=message.substring(4);
+						textArea.append("Opponent: "+msg+"\n");
+						continue;
+					}
                     if(message.startsWith("WIN")){
                         char winner=message.charAt(4);
                         JOptionPane.showMessageDialog(Game.this,"Player "+winner+" wins!");
@@ -224,7 +236,7 @@ class Game extends JFrame implements ActionListener,MouseListener{
     }
 
     public static void main(String[] args){
-        Game frame1=new Game("Gomoku");
+        new Game("Gomoku");
     }
 
     @Override
